@@ -1,34 +1,29 @@
 {
-    "settings": {
-        "mailbox": "Caixa Patrimonial",
+    "schemaVersion": 1,
+    "mailbox":{
+        "displayName": "",
         "sourceFolder": "Caixa de Entrada",
         "lookbackDays": 60,
+    },
+    "paths":{
+        "downloadSubFolder": "C:\\Users\\ykomuta\\Downloads\\",
+        "logDirectory": "logs",
+        "stateDirectory": "state"
+    },
+    "processing": {
         "allowedExtensions": [
             "xlsm",
-            "docx",
             "xlsx",
             "csv"
         ]
     },
-    "routes":[
-        {
-            "key": "0185:TBRA|0306:ITIS",
-            "company1":{
-                "code": "0185",
-                "acronym": "TBRA"
-            },
-            "company2":{
-                "code": "0306",
-                "acronym": "ITIS"
-            },
-            "destinationFolder": "0185 x 0306 TBRA X ITIS",
-            "targets": [
-                {
-                    "type": "local",
-                    "basePath": "{Documents}", /* path server */
-                    "mode": "move"
-                }
-            ]
-        }
+    "duplicatePolicy": "rename",
+    "acceptReplyPrefixes": [
+        "RE:",
+        "RES:",
+        "R:",
+        "FWD:",
+        "FW:"
     ]
+
 }
