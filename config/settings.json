@@ -1,0 +1,34 @@
+{
+    "settings": {
+        "mailbox": "Caixa Patrimonial",
+        "sourceFolder": "Caixa de Entrada",
+        "lookbackDays": 60,
+        "allowedExtensions": [
+            "xlsm",
+            "docx",
+            "xlsx",
+            "csv"
+        ]
+    },
+    "routes":[
+        {
+            "key": "0185:TBRA|0306:ITIS",
+            "company1":{
+                "code": "0185",
+                "acronym": "TBRA"
+            },
+            "company2":{
+                "code": "0306",
+                "acronym": "ITIS"
+            },
+            "destinationFolder": "0185 x 0306 TBRA X ITIS",
+            "targets": [
+                {
+                    "type": "local",
+                    "basePath": "{Documents}",
+                    "mode": "move"
+                }
+            ]
+        }
+    ]
+}
