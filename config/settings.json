@@ -25,7 +25,7 @@
             "targets": [
                 {
                     "type": "local",
-                    "basePath": "{Documents}",
+                    "basePath": "{Documents}", /* path server */
                     "mode": "move"
                 }
             ]
