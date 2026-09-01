@@ -1,10 +1,6 @@
-BeforeAll {
-    $modulePath = Join-Path `
-        $PSScriptRoot `
-        '..\src\SubjectParser.psm1'
-
-    Import-Module $modulePath -Force
-}
+Import-Module `
+    "./src/SubjectParser.psm1" `
+    -Force  
 
 Describe 'ConvertFrom-PatrimonialSubject' {
 
@@ -19,18 +15,18 @@ Describe 'ConvertFrom-PatrimonialSubject' {
             $result = ConvertFrom-PatrimonialSubject `
                 -Subject $subject
 
-            $result.Company1Acronym | Should -Be 'TBRA'
-            $result.Company1Code | Should -Be '0185'
+            $result.Company1Acronym | Should Be 'TBRA'
+            $result.Company1Code | Should Be '0185'
 
-            $result.Company2Acronym | Should -Be 'ITIS'
-            $result.Company2Code | Should -Be '0306'
+            $result.Company2Acronym | Should Be 'ITIS'
+            $result.Company2Code | Should Be '0306'
 
-            $result.Month | Should -Be 8
-            $result.Year | Should -Be 2026
-            $result.Competence | Should -Be '08/2026'
+            $result.Month | Should Be 8
+            $result.Year | Should Be 2026
+            $result.Competence | Should Be '08/2026'
 
             $result.RouteKey |
-                Should -Be '0185:TBRA|0306:ITIS'
+                Should Be '0185:TBRA|0306:ITIS'
         }
 
         It 'Deve normalizar espaços adicionais' {
@@ -43,10 +39,10 @@ Describe 'ConvertFrom-PatrimonialSubject' {
                 -Subject $subject
 
             $result.RouteKey |
-                Should -Be '0185:TBRA|0306:ITIS'
+                Should Be '0185:TBRA|0306:ITIS'
 
             $result.Competence |
-                Should -Be '08/2026'
+                Should Be '08/2026'
         }
 
         It 'Deve converter as siglas para letras maiúsculas' {
@@ -58,8 +54,8 @@ Describe 'ConvertFrom-PatrimonialSubject' {
             $result = ConvertFrom-PatrimonialSubject `
                 -Subject $subject
 
-            $result.Company1Acronym | Should -Be 'TBRA'
-            $result.Company2Acronym | Should -Be 'ITIS'
+            $result.Company1Acronym | Should Be 'TBRA'
+            $result.Company2Acronym | Should Be 'ITIS'
         }
     }
 
@@ -71,7 +67,7 @@ Describe 'ConvertFrom-PatrimonialSubject' {
             {
                 ConvertFrom-PatrimonialSubject `
                     -Subject $subject
-            } | Should -Throw
+            } | Should Throw
         }
 
         It 'Deve retornar INVALID_SUBJECT_FORMAT para assunto incorreto' {
@@ -91,23 +87,23 @@ Describe 'ConvertFrom-PatrimonialSubject' {
 
             # Confirma que um erro realmente foi capturado.
             $capturedError |
-                Should -Not -BeNullOrEmpty
+                Should Not BeNullOrEmpty
 
             # Confirma o identificador criado no SubjectParser.
             $capturedError.FullyQualifiedErrorId |
-                Should -Match '^INVALID_SUBJECT_FORMAT'
+                Should Match '^INVALID_SUBJECT_FORMAT'
 
             # Confirma a categoria do erro.
             $capturedError.CategoryInfo.Category |
-                Should -Be 'InvalidData'
+                Should Be 'InvalidData'
 
             # Confirma o tipo da exceção.
             $capturedError.Exception.GetType().FullName |
-                Should -Be 'System.FormatException'
+                Should Be 'System.FormatException'
 
             # Confirma parte da mensagem.
             $capturedError.Exception.Message |
-                Should -Match 'não corresponde ao padrão esperado'
+                Should Match 'não corresponde ao padrão esperado'
         }
 
         It 'Deve rejeitar mês maior que doze' {
@@ -129,10 +125,10 @@ Describe 'ConvertFrom-PatrimonialSubject' {
             }
 
             $capturedError |
-                Should -Not -BeNullOrEmpty
+                Should Not BeNullOrEmpty
 
             $capturedError.FullyQualifiedErrorId |
-                Should -Match '^INVALID_SUBJECT_FORMAT'
+                Should Match '^INVALID_SUBJECT_FORMAT'
         }
 
         It 'Deve rejeitar código com menos de quatro dígitos' {
@@ -144,7 +140,7 @@ Describe 'ConvertFrom-PatrimonialSubject' {
             {
                 ConvertFrom-PatrimonialSubject `
                     -Subject $subject
-            } | Should -Throw
+            } | Should Throw
         }
 
         It 'Deve retornar EMPTY_SUBJECT para assunto com espaços' {
@@ -161,10 +157,10 @@ Describe 'ConvertFrom-PatrimonialSubject' {
             }
 
             $capturedError |
-                Should -Not -BeNullOrEmpty
+                Should Not BeNullOrEmpty
 
             $capturedError.FullyQualifiedErrorId |
-                Should -Match '^EMPTY_SUBJECT'
+                Should Match '^EMPTY_SUBJECT'
         }
     }
 
@@ -179,7 +175,7 @@ Describe 'ConvertFrom-PatrimonialSubject' {
             {
                 ConvertFrom-PatrimonialSubject `
                     -Subject $subject
-            } | Should -Throw
+            } | Should Throw
         }
 
         It 'Deve aceitar RE quando AcceptReplyPrefixes estiver ativo' {
@@ -193,10 +189,10 @@ Describe 'ConvertFrom-PatrimonialSubject' {
                 -AcceptReplyPrefixes
 
             $result.RouteKey |
-                Should -Be '0185:TBRA|0306:ITIS'
+                Should Be '0185:TBRA|0306:ITIS'
 
             $result.ReplyPrefixRemoved |
-                Should -BeTrue
+                Should Be $true
         }
 
         It 'Deve remover múltiplos prefixos quando permitido' {
@@ -210,10 +206,10 @@ Describe 'ConvertFrom-PatrimonialSubject' {
                 -AcceptReplyPrefixes
 
             $result.RouteKey |
-                Should -Be '0185:TBRA|0306:ITIS'
+                Should Be '0185:TBRA|0306:ITIS'
 
             $result.ReplyPrefixRemoved |
-                Should -BeTrue
+                Should Be $true
         }
     }
 }

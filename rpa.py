@@ -3,7 +3,7 @@ import pyautogui
 pyautogui.hotkey('win')
 pyautogui.write('outlook', interval=0.25) 
 pyautogui.keyDown('enter')
-pyautogui.PAUSE = 3
+pyautogui.PAUSE = 4
 pyautogui.hotkey('win', 'pageup')
 pyautogui.PAUSE = 1.5
 pyautogui.click(button='left')
