@@ -1,11 +1,11 @@
-Set-StrictMode -Version Latest
+﻿Set-StrictMode -Version Latest
 
-# Padrão oficial do assunto:
-# Relatório de Eliminação Patrimonial -
-# SIGLA (CÓDIGO) X SIGLA (CÓDIGO) - MM/AAAA
+# PadrÃ£o oficial do assunto:
+# RelatÃ³rio de EliminaÃ§Ã£o Patrimonial -
+# SIGLA (CÃ“DIGO) X SIGLA (CÃ“DIGO) - MM/AAAA
 
 $script:PatrimonialSubjectPattern = @(
-    '^Relatório de Eliminação Patrimonial'
+    '^RelatÃ³rio de EliminaÃ§Ã£o Patrimonial'
     '\s*-\s*'
     '(?<Company1Acronym>[A-Z0-9]{2,15})'
     '\s*\(\s*'
@@ -29,7 +29,7 @@ function ConvertFrom-PatrimonialSubject {
         Interpreta o assunto de um e-mail patrimonial.
 
     .DESCRIPTION
-        Valida o assunto, extrai os códigos, as siglas e a competência
+        Valida o assunto, extrai os cÃ³digos, as siglas e a competÃªncia
         e gera a chave utilizada para consultar o routes.json.
 
     .PARAMETER Subject
@@ -44,7 +44,7 @@ function ConvertFrom-PatrimonialSubject {
 
     .EXAMPLE
         ConvertFrom-PatrimonialSubject `
-            -Subject "Relatório de Eliminação Patrimonial - TBRA (0185) X ITIS (0306) - 08/2026"
+            -Subject "RelatÃ³rio de EliminaÃ§Ã£o Patrimonial - TBRA (0185) X ITIS (0306) - 08/2026"
     #>
 
     [CmdletBinding()]
@@ -63,7 +63,7 @@ function ConvertFrom-PatrimonialSubject {
     )
 
     process {
-        # Substitui espaço não separável, que pode aparecer em textos
+        # Substitui espaÃ§o nÃ£o separÃ¡vel, que pode aparecer em textos
         # copiados de HTML ou gerados automaticamente.
         $normalizedSubject = $Subject.Replace(
             [char]0x00A0,
@@ -75,7 +75,7 @@ function ConvertFrom-PatrimonialSubject {
             [System.Text.NormalizationForm]::FormC
         )
 
-        # Remove espaços nas extremidades e transforma vários espaços em um.
+        # Remove espaÃ§os nas extremidades e transforma vÃ¡rios espaÃ§os em um.
         $normalizedSubject = $normalizedSubject.Trim()
         $normalizedSubject = [regex]::Replace(
             $normalizedSubject,
@@ -85,7 +85,7 @@ function ConvertFrom-PatrimonialSubject {
 
         if ([string]::IsNullOrWhiteSpace($normalizedSubject)) {
             $exception = [System.FormatException]::new(
-                'O assunto está vazio após sua normalização.'
+                'O assunto estÃ¡ vazio apÃ³s sua normalizaÃ§Ã£o.'
             )
 
             $errorRecord = [System.Management.Automation.ErrorRecord]::new(
@@ -132,12 +132,12 @@ function ConvertFrom-PatrimonialSubject {
 
         if (-not $subjectMatch.Success) {
             $expectedFormat = (
-                'Relatório de Eliminação Patrimonial - ' +
+                'RelatÃ³rio de EliminaÃ§Ã£o Patrimonial - ' +
                 'SIGLA (0000) X SIGLA (0000) - MM/AAAA'
             )
 
             $message = (
-                "O assunto não corresponde ao padrão esperado. " +
+                "O assunto nao corresponde ao padrao esperado. " +
                 "Assunto recebido: '$Subject'. " +
                 "Formato esperado: '$expectedFormat'."
             )
@@ -154,7 +154,7 @@ function ConvertFrom-PatrimonialSubject {
             $PSCmdlet.ThrowTerminatingError($errorRecord)
         }
 
-        # Códigos permanecem como string para preservar zeros à esquerda.
+        # CÃ³digos permanecem como string para preservar zeros Ã  esquerda.
         $company1Code = $subjectMatch.Groups[
             'Company1Code'
         ].Value
