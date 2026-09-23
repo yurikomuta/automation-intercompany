@@ -2,15 +2,14 @@
 
 from pathlib import Path
 import re
-
 import win32com.client
 
 
 ASSUNTO = re.compile(
-	r"^RELATÓRIO DE ELIMINAÇÃO RESULTADO\s*[–-]\s*"
+	r"^RELATÓRIO DE ELIMINAÇÃO RESULTADO(?:\s+V\d+)?\s*[–-]\s*"
 	r"(?P<empresa>.+?)\s+\((?P<codigo1>[^()]+)\)\s+x\s+"
 	r"\((?P<codigo2>[^()]+)\)\s+(?P<empresa2>.+?)\s*[–-]\s*"
-	r"(?P<mes>0[1-9]|1[0-2])/(?P<ano>\d{4})$",
+	r"(?P<mes>0[1-9]|1[0-2])(?:[/_-])(?P<ano>\d{4})(?:\s+.*)?$",
 	re.IGNORECASE,
 )
 PASTA_DESTINO = Path(r"C:\Users\ykomuta\Documents")
@@ -38,7 +37,7 @@ def salvar_anexos_dos_relatorios() -> int:
 		empresa = dados["empresa"].strip()
 		empresa2 = dados["empresa2"].strip()
 		pasta = PASTA_DESTINO / (
-			f"({dados['codigo1'].strip()}) x ({dados['codigo2'].strip()}) "
+			f"{dados['codigo1'].strip()} x {dados['codigo2'].strip()} "
 			f"{empresa} x {empresa2}"
 		)
 		pasta.mkdir(parents=True, exist_ok=True)
