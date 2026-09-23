@@ -14,6 +14,7 @@ ASSUNTO = re.compile(
 	re.IGNORECASE,
 )
 PASTA_DESTINO = Path(r"C:\Users\ykomuta\Documents")
+EXTENSOES_PERMITIDAS = {".xls", ".xlsx", ".csv", ".xlsm"}
 
 
 def salvar_anexos_dos_relatorios() -> int:
@@ -44,6 +45,8 @@ def salvar_anexos_dos_relatorios() -> int:
 
 		for anexo in item.Attachments:
 			nome = Path(str(anexo.FileName)).name
+			if Path(nome).suffix.lower() not in EXTENSOES_PERMITIDAS:
+				continue
 			destino = pasta / nome
 			contador = 1
 			while destino.exists():
