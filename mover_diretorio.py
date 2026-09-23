@@ -3,11 +3,17 @@
 import os
 import shutil
 import time
+from datetime import datetime
 from pathlib import Path
 
 import win32com.client as win32
 
-NOME_ARQUIVO = "TESTE RELATÓRIO DE ELIMINAÇÃO PATRIMONIAL.xlsx"
+def gerar_nome_arquivo() -> str:
+    agora = datetime.now()
+    mes = agora.month
+    ano = agora.strftime("%Y")
+    nome_base = "RELATÓRIO DE ELIMINAÇÃO PATRIMONIAL"
+    return f"{nome_base} {mes}_{ano}.xlsx"
 
 
 def aguardar_arquivo(path: Path, timeout: int = 30, intervalo: float = 0.5) -> None:
@@ -24,7 +30,7 @@ def main() -> None:
     destino_dir = Path.home() / "Documents"
     destino_dir.mkdir(parents=True, exist_ok=True)
     destino = destino_dir / "teste.xlsx"
-    destino_renomeado = destino_dir / NOME_ARQUIVO
+    destino_renomeado = destino_dir / gerar_nome_arquivo()
 
     excel = None
     workbook = None
