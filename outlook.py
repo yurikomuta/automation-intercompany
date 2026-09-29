@@ -66,7 +66,14 @@ def salvar_anexos_dos_relatorios() -> int:
 			if competencia is None:
 				continue
 			ano, mes = competencia
-			pasta = PASTA_DESTINO / f"ANO_{ano}" / f"{mes}_{ano}" / pasta_empresa
+			pasta = (
+				PASTA_DESTINO
+				/ f"ANO_{ano}"
+				/ f"{mes}_{ano}"
+				/ "APLICATIVO ELIMINAÇÃO"
+				/ "Eliminação Resultado"
+				/ pasta_empresa
+			)
 			pasta.mkdir(parents=True, exist_ok=True)
 
 			destino = pasta / nome
