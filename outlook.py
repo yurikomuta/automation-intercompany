@@ -14,8 +14,22 @@ ASSUNTO = re.compile(
 	r"(?:\s*[_-]\s*V\d+)?(?:\s+.*)?$",
     re.IGNORECASE,
 )
-PASTA_DESTINO = Path(r"C:\Users\ykomuta\Documents")
-EXTENSOES_PERMITIDAS = {".xls", ".xlsx", ".csv", ".xlsm"}
+PASTA_DESTINO = Path(r"C:\Users\ykomuta\Documents\2 - Intercompany")
+EXTENSOES_PERMITIDAS = {".xls", ".xlsx", ".csv", ".xlsm",".zip"}
+COMPETENCIA_ANEXO = re.compile(
+	r"(?<!\d)(?P<mes>0?[1-9]|1[0-2])[_/-](?P<ano>\d{4})(?!\d)"
+)
+
+
+def obter_competencia_anexo(nome: str) -> tuple[str, str] | None:
+	"""Extrai mês e ano do nome do anexo, por exemplo 8_2026 ou 08-2026."""
+	correspondencia = COMPETENCIA_ANEXO.search(nome)
+	if not correspondencia:
+		return None
+
+	mes = correspondencia.group("mes").zfill(2)
+	ano = correspondencia.group("ano")
+	return ano, mes
 
 
 def salvar_anexos_dos_relatorios() -> int:
@@ -38,16 +52,23 @@ def salvar_anexos_dos_relatorios() -> int:
 		dados = correspondencia.groupdict()
 		empresa = dados["empresa"].strip()
 		empresa2 = dados["empresa2"].strip()
-		pasta = PASTA_DESTINO / (
+		pasta_empresa = (
 			f"{dados['codigo1'].strip()} x {dados['codigo2'].strip()} "
 			f"{empresa} x {empresa2}"
 		)
-		pasta.mkdir(parents=True, exist_ok=True)
 
 		for anexo in item.Attachments:
 			nome = Path(str(anexo.FileName)).name
 			if Path(nome).suffix.lower() not in EXTENSOES_PERMITIDAS:
 				continue
+
+			competencia = obter_competencia_anexo(nome)
+			if competencia is None:
+				continue
+			ano, mes = competencia
+			pasta = PASTA_DESTINO / f"ANO_{ano}" / f"{mes}_{ano}" / pasta_empresa
+			pasta.mkdir(parents=True, exist_ok=True)
+
 			destino = pasta / nome
 			contador = 1
 			while destino.exists():
