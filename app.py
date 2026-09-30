@@ -3,17 +3,15 @@ from datetime import datetime
 import importlib.util
 from pathlib import Path
 import sys
-
 import flet as ft
 import pythoncom
 import win32com.client
 
-from outlook_sync import sincronizar_todas_as_pastas
-
-
 PROJECT_DIR = Path(__file__).resolve().parent
 if str(PROJECT_DIR) not in sys.path:
 	sys.path.insert(0, str(PROJECT_DIR))
+
+from outlook_sync import sincronizar_todas_as_pastas
 
 
 def carregar_script(nome_modulo: str, nome_arquivo: str):
@@ -75,7 +73,7 @@ def main(page: ft.Page) -> None:
 		min_lines=12,
 		max_lines=12,
 		text_style=ft.TextStyle(font_family="Cascadia Code", size=12, color="#34413A"),
-		border=ft.InputBorder.NONE,
+		border=ft.NoInputBorder(),
 		bgcolor=ft.Colors.TRANSPARENT,
 		expand=True,
 	)
@@ -90,10 +88,10 @@ def main(page: ft.Page) -> None:
 		registros.append(f"{horario}  {mensagem}")
 		caixa_log.value = "\n".join(registros[-300:])
 
-	def definir_status(mensagem: str, cor: str, fundo: str, icone: str) -> None:
+	def definir_status(mensagem: str, cor: str, fundo: str, icone) -> None:
 		texto_status.value = mensagem
 		texto_status.color = cor
-		icone_status.name = icone
+		icone_status.icon = icone
 		icone_status.color = cor
 		indicador_status.bgcolor = fundo
 
