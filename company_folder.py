@@ -28,6 +28,17 @@ def preparar_pasta_empresa(pasta_empresa: Path) -> None:
 	organizar_versoes(pasta_empresa)
 
 
+def organizar_pastas_empresa_existentes(pasta_destino: Path, tipo_eliminacao: str) -> None:
+	"""Organiza pastas de empresa existentes, mesmo sem novos anexos."""
+	for pasta_aplicativo in pasta_destino.glob("ANO_*/*/APLICATIVO ELIMINAÇÃO"):
+		pasta_categoria = pasta_aplicativo / tipo_eliminacao
+		if not pasta_categoria.is_dir():
+			continue
+		for pasta_empresa in pasta_categoria.iterdir():
+			if pasta_empresa.is_dir():
+				preparar_pasta_empresa(pasta_empresa)
+
+
 def organizar_versoes(pasta_empresa: Path) -> None:
 	"""Mantem a maior versao na raiz e arquiva versoes numericamente menores."""
 	pasta_anteriores = pasta_empresa / PASTA_VERSOES_ANTERIORES

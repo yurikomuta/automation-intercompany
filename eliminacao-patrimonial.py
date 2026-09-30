@@ -1,13 +1,16 @@
-"""Localiza relatórios no Outlook e salva seus anexos."""
-
 from pathlib import Path
 import re
 import win32com.client
 from attachment_archive import extrair_e_remover_zip
-from company_folder import arquivo_ja_processado, organizar_versoes, preparar_pasta_empresa
+from company_folder import (
+	arquivo_ja_processado,
+	organizar_pastas_empresa_existentes,
+	organizar_versoes,
+	preparar_pasta_empresa,
+)
 from outlook_sync import sincronizar_todas_as_pastas
 
-
+"""Localiza relatórios de eliminação patrimonial no Outlook ."""
 ASSUNTO = re.compile(
 	r"^RELAT[ÓO]RIO DE ELIMINA[ÇC][ÃA]O PATRIMONIAL(?:\s+V\d+)?"
 	r"\s*[–-]\s*"
@@ -39,6 +42,7 @@ def salvar_anexos_dos_relatorios() -> int:
 	"""Processa os e-mails da Caixa de Entrada e retorna a quantidade salva."""
 	outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
 	sincronizar_todas_as_pastas(outlook)
+	organizar_pastas_empresa_existentes(PASTA_DESTINO, "Eliminação Patrimonial")
 	caixa_de_entrada = outlook.GetDefaultFolder(6)  # olFolderInbox
 	itens = caixa_de_entrada.Items
 	itens.Sort("[ReceivedTime]", True)
