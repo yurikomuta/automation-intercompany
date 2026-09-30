@@ -53,7 +53,7 @@ def salvar_anexos_dos_relatorios() -> int:
 		empresa = dados["empresa"].strip()
 		empresa2 = dados["empresa2"].strip()
 		pasta_empresa = (
-			f"{dados['codigo1'].strip()} x {dados['codigo2'].strip()} "
+			f"{dados['codigo1'].strip()} x {dados['codigo2'].strip()} - "
 			f"{empresa} x {empresa2}"
 		)
 
