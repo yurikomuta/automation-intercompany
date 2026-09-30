@@ -3,6 +3,7 @@
 from pathlib import Path
 import re
 import win32com.client
+from attachment_archive import extrair_e_remover_zip
 from outlook_sync import sincronizar_todas_as_pastas
 
 
@@ -80,9 +81,13 @@ def salvar_anexos_dos_relatorios() -> int:
 
 			destino = pasta / nome
 			if destino.exists():
+				if destino.suffix.lower() == ".zip":
+					extrair_e_remover_zip(destino)
 				continue
 
 			anexo.SaveAsFile(str(destino))
+			if destino.suffix.lower() == ".zip":
+				extrair_e_remover_zip(destino)
 			quantidade += 1
 
 	return quantidade
