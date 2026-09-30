@@ -3,6 +3,7 @@
 from pathlib import Path
 import re
 import win32com.client
+from outlook_sync import sincronizar_todas_as_pastas
 
 
 ASSUNTO = re.compile(
@@ -35,6 +36,7 @@ def obter_competencia_anexo(nome: str) -> tuple[str, str] | None:
 def salvar_anexos_dos_relatorios() -> int:
 	"""Processa os e-mails da Caixa de Entrada e retorna a quantidade salva."""
 	outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+	sincronizar_todas_as_pastas(outlook)
 	caixa_de_entrada = outlook.GetDefaultFolder(6)  # olFolderInbox
 	itens = caixa_de_entrada.Items
 	itens.Sort("[ReceivedTime]", True)
