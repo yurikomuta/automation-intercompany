@@ -2,6 +2,7 @@ from pathlib import Path
 import re
 import win32com.client
 from attachment_archive import extrair_e_remover_zip
+from company_folder import arquivo_ja_processado, organizar_versoes, preparar_pasta_empresa
 from outlook_sync import sincronizar_todas_as_pastas
 
 """Localiza relatórios de eliminação resultado no Outlook ."""
@@ -75,17 +76,21 @@ def salvar_anexos_dos_relatorios() -> int:
 				/ "Eliminação Resultado"
 				/ pasta_empresa
 			)
-			pasta.mkdir(parents=True, exist_ok=True)
+			preparar_pasta_empresa(pasta)
 
 			destino = pasta / nome
 			if destino.exists():
 				if destino.suffix.lower() == ".zip":
 					extrair_e_remover_zip(destino)
+					organizar_versoes(pasta)
+				continue
+			if arquivo_ja_processado(pasta, nome):
 				continue
 
 			anexo.SaveAsFile(str(destino))
 			if destino.suffix.lower() == ".zip":
 				extrair_e_remover_zip(destino)
+			organizar_versoes(pasta)
 			quantidade += 1
 
 	return quantidade
