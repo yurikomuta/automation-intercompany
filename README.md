@@ -22,3 +22,13 @@ Na pasta do projeto, execute:
 Se o PowerShell bloquear a execucao de scripts locais, use apenas nesta sessao:
 
 ` Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass `
+
+#### Aplicativo desktop
+
+Instale as dependencias do aplicativo na venv:
+
+` .\.venv\Scripts\python.exe -m pip install -r requirements-app.txt `
+
+Depois, abra `Abrir-Automacao.bat` ou execute:
+
+` .\.venv\Scripts\python.exe app.py `
