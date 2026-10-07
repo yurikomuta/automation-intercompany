@@ -18,7 +18,7 @@ ASSUNTO = re.compile(
 	re.IGNORECASE,
 )
 PASTA_DESTINO = Path(r"C:\Users\ykomuta\Documents\2 - Intercompany")
-EXTENSOES_PERMITIDAS = {".xls", ".xlsx", ".csv", ".xlsm",".zip"}
+EXTENSOES_PERMITIDAS = {".xls", ".xlsx", ".xlsb", ".csv", ".xlsm", ".zip"}
 
 
 def salvar_anexos_dos_relatorios() -> int:
