@@ -5,7 +5,6 @@ from attachment_archive import extrair_e_remover_zip
 from company_folder import (
 	arquivo_ja_processado,
 	organizar_versoes,
-	preparar_pasta_empresa,
 )
 from outlook_sync import sincronizar_todas_as_pastas
 
@@ -56,7 +55,8 @@ def salvar_anexos_dos_relatorios() -> int:
 				/ "COMPOSIÇÃO DE SALDOS"
 				/ pasta_empresa
 			)
-			preparar_pasta_empresa(pasta)
+			pasta.mkdir(parents=True, exist_ok=True)
+			organizar_versoes(pasta)
 
 			destino = pasta / nome
 			if destino.exists():
