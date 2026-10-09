@@ -6,12 +6,11 @@ import sys
 import flet as ft
 import pythoncom
 import win32com.client
+from outlook_sync import sincronizar_todas_as_pastas
 
 PROJECT_DIR = Path(__file__).resolve().parent
 if str(PROJECT_DIR) not in sys.path:
 	sys.path.insert(0, str(PROJECT_DIR))
-
-from outlook_sync import sincronizar_todas_as_pastas
 
 
 def carregar_script(nome_modulo: str, nome_arquivo: str):
@@ -64,7 +63,7 @@ def main(page: ft.Page) -> None:
 		content=ft.Row([icone_status, texto_status], spacing=8),
 		bgcolor="#E5F2E9",
 		padding=ft.Padding.symmetric(horizontal=14, vertical=9),
-		border_radius=20,
+		border_radius=5,
 	)
 	progresso = ft.ProgressRing(visible=False, width=20, height=20, stroke_width=2)
 	caixa_log = ft.TextField(
@@ -163,26 +162,26 @@ def main(page: ft.Page) -> None:
 				ft.Text("Atualizar caixa de entrada", size=15, weight=ft.FontWeight.W_600),
 			],
 			alignment=ft.MainAxisAlignment.CENTER,
-			spacing=10,
+			spacing=11,
 		),
 		on_click=clicar_atualizar,
 		bgcolor="#176B5B",
 		color=ft.Colors.WHITE,
-		height=58,
+		height=72,
 		expand=True,
 	)
 	botao_patrimonial = ft.Button(
 		content=ft.Row(
 			[
-				ft.Icon(ft.Icons.ACCOUNT_BALANCE, size=21),
+				ft.Icon(ft.Icons.ADD_ROAD, size=21),
 				ft.Text("Eliminação Patrimonial", size=15, weight=ft.FontWeight.W_600),
 			],
 			alignment=ft.MainAxisAlignment.CENTER,
 			spacing=11,
 		),
 		on_click=clicar_patrimonial,
-		bgcolor=ft.Colors.WHITE,
-		color="#294239",
+		bgcolor="#660099",
+		color="#fff",
 		height=72,
 		expand=True,
 	)
@@ -196,8 +195,8 @@ def main(page: ft.Page) -> None:
 			spacing=11,
 		),
 		on_click=clicar_resultado,
-		bgcolor=ft.Colors.WHITE,
-		color="#294239",
+		bgcolor="#660099",
+		color="#fff",
 		height=72,
 		expand=True,
 	)
@@ -211,8 +210,8 @@ def main(page: ft.Page) -> None:
 			spacing=11,
 		),
 		on_click=clicar_composicao,
-		bgcolor=ft.Colors.WHITE,
-		color="#294239",
+		bgcolor="#660099",
+		color="#fff",
 		height=72,
 		expand=True,
 	)
@@ -260,9 +259,7 @@ def main(page: ft.Page) -> None:
 			cabecalho,
 			ft.Divider(height=1, color="#DCE4DD"),
 			ft.Text("Ações", size=13, weight=ft.FontWeight.W_700, color="#63736A"),
-			botao_atualizar,
-			ft.Row([botao_patrimonial, botao_resultado], spacing=14),
-			ft.Row([botao_composicao], spacing=14),
+			ft.Row([botao_patrimonial, botao_resultado, botao_composicao, botao_atualizar], spacing=10),
 			ft.Divider(height=1, color="#DCE4DD"),
 			log_cabecalho,
 			ft.Container(
