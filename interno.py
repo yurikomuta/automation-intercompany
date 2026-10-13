@@ -3,6 +3,14 @@
 from pathlib import Path
 import re
 import win32com.client
+from attachment_archive import extrair_e_remover_zip
+from company_folder import (
+	arquivo_ja_processado,
+	organizar_pastas_empresa_existentes,
+	organizar_versoes,
+	preparar_pasta_empresa,
+)
+from outlook_sync import sincronizar_todas_as_pastas
 
 
 ASSUNTO = re.compile(
@@ -35,6 +43,8 @@ def obter_competencia_anexo(nome: str) -> tuple[str, str] | None:
 def salvar_anexos_dos_relatorios() -> int:
 	"""Processa os e-mails da Caixa de Entrada e retorna a quantidade salva."""
 	outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+	sincronizar_todas_as_pastas(outlook)
+	organizar_pastas_empresa_existentes(PASTA_DESTINO, "Eliminação Resultado")
 	caixa_de_entrada = outlook.GetDefaultFolder(6)  # olFolderInbox
 	itens = caixa_de_entrada.Items
 	itens.Sort("[ReceivedTime]", True)
@@ -74,14 +84,21 @@ def salvar_anexos_dos_relatorios() -> int:
 				/ "Eliminação Resultado"
 				/ pasta_empresa
 			)
-			pasta.mkdir(parents=True, exist_ok=True)
+			preparar_pasta_empresa(pasta)
 
 			destino = pasta / nome
-			contador = 1
-			while destino.exists():
-				destino = pasta / f"{Path(nome).stem}_{contador}{Path(nome).suffix}"
-				contador += 1
+			if destino.exists() and destino.suffix.lower() == ".zip":
+				extrair_e_remover_zip(destino)
+				organizar_versoes(pasta)
+				continue
+
+			if arquivo_ja_processado(pasta, nome):
+				continue
+
 			anexo.SaveAsFile(str(destino))
+			if destino.suffix.lower() == ".zip":
+				extrair_e_remover_zip(destino)
+			organizar_versoes(pasta)
 			quantidade += 1
 
 	return quantidade
