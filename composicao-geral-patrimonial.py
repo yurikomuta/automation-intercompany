@@ -18,7 +18,7 @@ ASSUNTO = re.compile(
 	r"(?:\s*[_-]\s*V\d+)?(?:\s+.*)?$",
 	re.IGNORECASE,
 )
-PASTA_DESTINO = Path(r"Z:\brtssisp003\bbb0133$\2 - Intercompany")
+PASTA_DESTINO = Path(r"\\brtssisp003\bbb0133$\2 - Intercompany")
 EXTENSOES_PERMITIDAS = {".xls", ".xlsx", ".csv", ".xlsm",".zip"}
 
 
