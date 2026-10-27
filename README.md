@@ -37,7 +37,7 @@ O app também organiza pastas de empresa já existentes antes da busca de e-mail
 - Windows 10 ou 11 de 64 bits.
 - Python 3.10 ou posterior.
 - Microsoft Outlook desktop instalado, com perfil e Caixa de Entrada configurados. A automação usa Outlook via COM; o novo Outlook não oferece essa interface COM.
-- Acesso à pasta de destino configurada nos scripts (`C:\Users\ykomuta\Documents\2 - Intercompany`).
+- Acesso à pasta de destino configurada nos scripts (`Z:\brtssisp003\bbb0133$\2 - Intercompany`).
 
 ## Instalação
 
