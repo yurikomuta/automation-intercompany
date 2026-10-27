@@ -20,7 +20,7 @@ ASSUNTO = re.compile(
 	r"(?:\s*[_-]\s*V\d+)?(?:\s+.*)?$",
     re.IGNORECASE,
 )
-PASTA_DESTINO = Path(r"C:\Users\ykomuta\Documents\2 - Intercompany")
+PASTA_DESTINO = Path(r"Z:\brtssisp003\bbb0133$\2 - Intercompany")
 EXTENSOES_PERMITIDAS = {".xls", ".xlsx", ".csv", ".xlsm",".zip"}
 COMPETENCIA_ANEXO = re.compile(
 	r"(?<!\d)(?P<mes>0?[1-9]|1[0-2])[_/-](?P<ano>\d{4})(?!\d)"
