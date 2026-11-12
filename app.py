@@ -27,6 +27,9 @@ def carregar_script(nome_modulo: str, nome_arquivo: str):
 modulo_patrimonial = carregar_script("eliminacao_patrimonial", "eliminacao-patrimonial.py")
 modulo_resultado = carregar_script("eliminacao_resultado", "eliminacao-resultado.py")
 modulo_composicao = carregar_script("composicao_geral", "composicao-geral.py")
+modulo_quadro_resumo = carregar_script(
+	"quadro_resumo_patrimonial", "quadro-resumo-patrimonial.py"
+)
 
 
 def executar_com_com(funcao):
@@ -148,6 +151,12 @@ def main(page: ft.Page) -> None:
 			modulo_composicao.salvar_anexos_dos_relatorios,
 		)
 
+	async def clicar_quadro_resumo(_evento) -> None:
+		await executar_acao(
+			"Quadro Resumo Patrimonial Consolidado",
+			modulo_quadro_resumo.salvar_anexos_quadro_resumo,
+		)
+
 	def limpar_log(_evento) -> None:
 		registros.clear()
 		caixa_log.value = ""
@@ -215,8 +224,33 @@ def main(page: ft.Page) -> None:
 		height=72,
 		expand=True,
 	)
+	botao_quadro_resumo = ft.Button(
+		content=ft.Row(
+			[
+				ft.Icon(ft.Icons.TABLE_CHART, size=21),
+				ft.Text(
+					"Quadro Resumo\nPatrimonial Consolidado",
+					size=14,
+					weight=ft.FontWeight.W_600,
+				),
+			],
+			alignment=ft.MainAxisAlignment.CENTER,
+			spacing=11,
+		),
+		on_click=clicar_quadro_resumo,
+		bgcolor="#176B5B",
+		color=ft.Colors.WHITE,
+		height=72,
+		expand=True,
+	)
 	botoes.extend(
-		[botao_atualizar, botao_patrimonial, botao_resultado, botao_composicao]
+		[
+			botao_atualizar,
+			botao_patrimonial,
+			botao_resultado,
+			botao_composicao,
+			botao_quadro_resumo,
+		]
 	)
 
 	cabecalho = ft.Row(
@@ -259,7 +293,13 @@ def main(page: ft.Page) -> None:
 			cabecalho,
 			ft.Divider(height=1, color="#DCE4DD"),
 			ft.Text("Ações", size=13, weight=ft.FontWeight.W_700, color="#63736A"),
-			ft.Row([botao_patrimonial, botao_resultado, botao_composicao, botao_atualizar], spacing=10),
+			ft.Column(
+				[
+					ft.Row([botao_patrimonial, botao_resultado], spacing=10),
+					ft.Row([botao_composicao, botao_quadro_resumo, botao_atualizar], spacing=10),
+				],
+				spacing=10,
+			),
 			ft.Divider(height=1, color="#DCE4DD"),
 			log_cabecalho,
 			ft.Container(
