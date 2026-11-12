@@ -116,6 +116,13 @@ def main(page: ft.Page) -> None:
 			resultado = await asyncio.to_thread(executar_com_com, funcao)
 			if resultado is None:
 				atualizar_log("Caixa de entrada atualizada.")
+			elif isinstance(resultado, list):
+				atualizar_log(f"Processamento concluido. Arquivos salvos: {len(resultado)}")
+				if resultado:
+					for arquivo in resultado:
+						atualizar_log(f"- {arquivo}")
+				else:
+					atualizar_log("Nenhum arquivo novo foi salvo.")
 			else:
 				atualizar_log(f"Processamento concluido. Anexos salvos: {resultado}")
 			definir_status("Concluído", "#285D4D", "#E5F2E9", ft.Icons.CHECK_CIRCLE)

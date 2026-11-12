@@ -1,3 +1,7 @@
+param(
+	[string]$OutputName = "automacao_intercompany"
+)
+
 $ErrorActionPreference = "Stop"
 
 $projectDir = $PSScriptRoot
@@ -27,12 +31,11 @@ New-Item -ItemType Directory -Force -Path $payloadDir, $workDir, $distDir | Out-
 Compress-Archive -Path $runtimeDir -DestinationPath $runtimeZip -CompressionLevel Fastest -Force
 
 $arguments = @(
-	"--clean",
 	(Join-Path $projectDir "app.py"),
 	"--noconsole",
 	"--windowed",
 	"--onefile",
-	"--name", "automacao_intercompany",
+	"--name", $OutputName,
 	"--distpath", $distDir,
 	"--workpath", $workDir,
 	"--specpath", $buildDir,
@@ -66,7 +69,7 @@ finally {
 	Pop-Location
 }
 
-$exe = Join-Path $distDir "automacao_intercompany.exe"
-Compress-Archive -Path $exe -DestinationPath (Join-Path $distDir "automacao_intercompany.zip") -Force
+$exe = Join-Path $distDir "$OutputName.exe"
+Compress-Archive -Path $exe -DestinationPath (Join-Path $distDir "$OutputName.zip") -Force
 Write-Host "Executavel: $exe"
-Write-Host "Pacote ZIP: $(Join-Path $distDir 'automacao_intercompany.zip')"
+Write-Host "Pacote ZIP: $(Join-Path $distDir "$OutputName.zip")"

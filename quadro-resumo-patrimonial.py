@@ -8,7 +8,7 @@ from company_folder import arquivo_ja_processado, organizar_versoes
 from outlook_sync import sincronizar_todas_as_pastas
 
 
-PASTA_DESTINO = Path(r"\\brtssisp003\bbb0133$\2 - Intercompany")
+PASTA_DESTINO = Path(r"C:\Users\ykomuta\Documents")
 ASSUNTO = re.compile(
 	r"^QUADRO RESUMO\s*[-–]\s*"
 	r"(?P<mes>0[1-9]|1[0-2])/(?P<ano>\d{4})"
@@ -50,13 +50,13 @@ def analisar_nome_arquivo(nome: str) -> dict[str, str] | None:
 	return dados
 
 
-def obter_codigo_empresa(empresa: str) -> str:
-	"""Resolve o código da empresa usando o cadastro do processo."""
+def obter_codigo_empresa(empresa: str) -> str | None:
+	"""Resolve o código da empresa ou retorna None se ela não estiver cadastrada."""
 	chave = " ".join(empresa.split()).casefold()
 	for nome, codigo in CODIGOS_EMPRESA.items():
 		if nome.casefold() == chave:
 			return codigo
-	raise ValueError(f"Empresa não cadastrada no Quadro Resumo: {empresa}")
+	return None
 
 
 def aplicar_versao(nome: str, versao: str | None) -> str:
@@ -67,8 +67,12 @@ def aplicar_versao(nome: str, versao: str | None) -> str:
 	return f"{base}{sufixo}{arquivo.suffix}"
 
 
-def _obter_pasta_empresa(dados: dict[str, str], versao: str | None) -> tuple[Path, str]:
+def _obter_pasta_empresa(
+	dados: dict[str, str], versao: str | None
+) -> tuple[Path, str] | None:
 	codigo = obter_codigo_empresa(dados["empresa"])
+	if codigo is None:
+		return None
 	empresa = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "_", dados["empresa"]).strip(" .")
 	pasta = (
 		PASTA_DESTINO
@@ -85,21 +89,31 @@ def _competencia_compativel(arquivo: dict[str, str], assunto: dict[str, str | No
 	return arquivo["mes"] == assunto["mes"] and arquivo["ano"] == assunto["ano"]
 
 
-def _salvar_anexo_xlsx(anexo, assunto: dict[str, str | None], pastas_alteradas: set[Path]) -> int:
+def _salvar_anexo_xlsx(
+	anexo, assunto: dict[str, str | None], pastas_alteradas: set[Path]
+) -> list[str]:
 	dados = analisar_nome_arquivo(str(anexo.FileName))
 	if not dados or not _competencia_compativel(dados, assunto):
-		return 0
+		return []
 
-	pasta, nome = _obter_pasta_empresa({**dados, "nome": str(anexo.FileName)}, assunto["versao"])
+	resultado = _obter_pasta_empresa(
+		{**dados, "nome": str(anexo.FileName)}, assunto["versao"]
+	)
+	if resultado is None:
+		return []
+	pasta, nome = resultado
 	pastas_alteradas.add(pasta)
 	if arquivo_ja_processado(pasta, nome):
-		return 0
-	anexo.SaveAsFile(str(pasta / nome))
-	return 1
+		return []
+	destino = pasta / nome
+	anexo.SaveAsFile(str(destino))
+	return [str(destino.relative_to(PASTA_DESTINO))]
 
 
-def _salvar_xlsx_do_zip(caminho_zip: Path, assunto: dict[str, str | None], pastas_alteradas: set[Path]) -> int:
-	quantidade = 0
+def _salvar_xlsx_do_zip(
+	caminho_zip: Path, assunto: dict[str, str | None], pastas_alteradas: set[Path]
+) -> list[str]:
+	arquivos_salvos = []
 	with ZipFile(caminho_zip) as arquivo_zip:
 		for membro in arquivo_zip.infolist():
 			if membro.is_dir():
@@ -108,25 +122,30 @@ def _salvar_xlsx_do_zip(caminho_zip: Path, assunto: dict[str, str | None], pasta
 			if not dados or not _competencia_compativel(dados, assunto):
 				continue
 
-			pasta, nome = _obter_pasta_empresa({**dados, "nome": membro.filename}, assunto["versao"])
+			resultado = _obter_pasta_empresa(
+				{**dados, "nome": membro.filename}, assunto["versao"]
+			)
+			if resultado is None:
+				continue
+			pasta, nome = resultado
 			pastas_alteradas.add(pasta)
 			if arquivo_ja_processado(pasta, nome):
 				continue
 			with arquivo_zip.open(membro) as origem, (pasta / nome).open("wb") as destino:
 				shutil.copyfileobj(origem, destino)
-			quantidade += 1
-	return quantidade
+			arquivos_salvos.append(str((pasta / nome).relative_to(PASTA_DESTINO)))
+	return arquivos_salvos
 
 
-def salvar_anexos_quadro_resumo() -> int:
-	"""Salva os XLSX do Quadro Resumo por competência e empresa."""
+def salvar_anexos_quadro_resumo() -> list[str]:
+	"""Salva os XLSX e retorna os caminhos relativos dos arquivos gravados."""
 	outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
 	sincronizar_todas_as_pastas(outlook)
 	inbox = outlook.GetDefaultFolder(6)  # olFolderInbox
 	itens = inbox.Items
 	itens.Sort("[ReceivedTime]", True)
 
-	quantidade = 0
+	arquivos_salvos = []
 	pastas_alteradas: set[Path] = set()
 	for item in itens:
 		if getattr(item, "Class", None) != 43:  # olMail
@@ -138,17 +157,24 @@ def salvar_anexos_quadro_resumo() -> int:
 		for anexo in item.Attachments:
 			extensao = Path(str(anexo.FileName)).suffix.lower()
 			if extensao == ".xlsx":
-				quantidade += _salvar_anexo_xlsx(anexo, assunto, pastas_alteradas)
+				arquivos_salvos.extend(
+					_salvar_anexo_xlsx(anexo, assunto, pastas_alteradas)
+				)
 			elif extensao == ".zip":
 				with tempfile.TemporaryDirectory() as diretorio_temporario:
 					caminho_zip = Path(diretorio_temporario) / Path(str(anexo.FileName)).name
 					anexo.SaveAsFile(str(caminho_zip))
-					quantidade += _salvar_xlsx_do_zip(caminho_zip, assunto, pastas_alteradas)
+					arquivos_salvos.extend(
+						_salvar_xlsx_do_zip(caminho_zip, assunto, pastas_alteradas)
+					)
 
 	for pasta in pastas_alteradas:
 		organizar_versoes(pasta)
-	return quantidade
+	return arquivos_salvos
 
 
 if __name__ == "__main__":
-	print(f"Arquivos salvos: {salvar_anexos_quadro_resumo()}")
+	arquivos_salvos = salvar_anexos_quadro_resumo()
+	print(f"Arquivos salvos: {len(arquivos_salvos)}")
+	for arquivo in arquivos_salvos:
+		print(f"- {arquivo}")
