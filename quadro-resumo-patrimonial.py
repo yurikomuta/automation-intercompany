@@ -4,11 +4,11 @@ import shutil
 import tempfile
 from zipfile import ZipFile
 import win32com.client
-from company_folder import arquivo_ja_processado, organizar_versoes
 from outlook_sync import sincronizar_todas_as_pastas
 
 
 PASTA_DESTINO = Path(r"C:\Users\ykomuta\Documents")
+PASTA_VERSOES_ANTERIORES = "Versões Anteriores"
 ASSUNTO = re.compile(
 	r"^QUADRO RESUMO\s*[-–]\s*"
 	r"(?P<mes>0[1-9]|1[0-2])/(?P<ano>\d{4})"
@@ -32,6 +32,16 @@ CODIGOS_EMPRESA = {
 	"VSS": "2207",
 	"VSCD": "2234",
 }
+
+
+class ListaArquivosSalvos(list):
+	"""Lista de arquivos salvos com formatação legível para o log."""
+
+	def __str__(self) -> str:
+		if not self:
+			return "0\nNenhum arquivo novo foi salvo."
+		linhas = "\n".join(f"- {arquivo}" for arquivo in self)
+		return f"{len(self)}\n{linhas}"
 
 
 def analisar_assunto(assunto: str) -> dict[str, str | None] | None:
@@ -67,6 +77,18 @@ def aplicar_versao(nome: str, versao: str | None) -> str:
 	return f"{base}{sufixo}{arquivo.suffix}"
 
 
+def _remover_subpasta_versoes_anteriores(pasta_empresa: Path) -> None:
+	"""Restaura arquivos de 'Versões Anteriores' para a pasta da empresa e remove a subpasta."""
+	pasta_anteriores = pasta_empresa / PASTA_VERSOES_ANTERIORES
+	if not pasta_anteriores.is_dir():
+		return
+	for item in pasta_anteriores.iterdir():
+		destino = pasta_empresa / item.name
+		if item.is_file() and not destino.exists():
+			shutil.move(str(item), str(destino))
+	shutil.rmtree(pasta_anteriores, ignore_errors=True)
+
+
 def _obter_pasta_empresa(
 	dados: dict[str, str], versao: str | None
 ) -> tuple[Path, str] | None:
@@ -82,6 +104,7 @@ def _obter_pasta_empresa(
 		/ f"{codigo}-{empresa}"
 	)
 	pasta.mkdir(parents=True, exist_ok=True)
+	_remover_subpasta_versoes_anteriores(pasta)
 	return pasta, aplicar_versao(Path(dados["nome"]).name, versao)
 
 
@@ -90,7 +113,9 @@ def _competencia_compativel(arquivo: dict[str, str], assunto: dict[str, str | No
 
 
 def _salvar_anexo_xlsx(
-	anexo, assunto: dict[str, str | None], pastas_alteradas: set[Path]
+	anexo,
+	assunto: dict[str, str | None],
+	destinos_salvos: set[Path] | None = None,
 ) -> list[str]:
 	dados = analisar_nome_arquivo(str(anexo.FileName))
 	if not dados or not _competencia_compativel(dados, assunto):
@@ -102,18 +127,21 @@ def _salvar_anexo_xlsx(
 	if resultado is None:
 		return []
 	pasta, nome = resultado
-	pastas_alteradas.add(pasta)
-	if arquivo_ja_processado(pasta, nome):
-		return []
 	destino = pasta / nome
+	if destinos_salvos is not None and destino in destinos_salvos:
+		return []
 	anexo.SaveAsFile(str(destino))
+	if destinos_salvos is not None:
+		destinos_salvos.add(destino)
 	return [str(destino.relative_to(PASTA_DESTINO))]
 
 
 def _salvar_xlsx_do_zip(
-	caminho_zip: Path, assunto: dict[str, str | None], pastas_alteradas: set[Path]
+	caminho_zip: Path,
+	assunto: dict[str, str | None],
+	destinos_salvos: set[Path] | None = None,
 ) -> list[str]:
-	arquivos_salvos = []
+	arquivos_salvos = ListaArquivosSalvos()
 	with ZipFile(caminho_zip) as arquivo_zip:
 		for membro in arquivo_zip.infolist():
 			if membro.is_dir():
@@ -128,12 +156,14 @@ def _salvar_xlsx_do_zip(
 			if resultado is None:
 				continue
 			pasta, nome = resultado
-			pastas_alteradas.add(pasta)
-			if arquivo_ja_processado(pasta, nome):
+			destino = pasta / nome
+			if destinos_salvos is not None and destino in destinos_salvos:
 				continue
-			with arquivo_zip.open(membro) as origem, (pasta / nome).open("wb") as destino:
-				shutil.copyfileobj(origem, destino)
-			arquivos_salvos.append(str((pasta / nome).relative_to(PASTA_DESTINO)))
+			with arquivo_zip.open(membro) as origem, destino.open("wb") as arquivo_destino:
+				shutil.copyfileobj(origem, arquivo_destino)
+			if destinos_salvos is not None:
+				destinos_salvos.add(destino)
+			arquivos_salvos.append(str(destino.relative_to(PASTA_DESTINO)))
 	return arquivos_salvos
 
 
@@ -145,8 +175,8 @@ def salvar_anexos_quadro_resumo() -> list[str]:
 	itens = inbox.Items
 	itens.Sort("[ReceivedTime]", True)
 
-	arquivos_salvos = []
-	pastas_alteradas: set[Path] = set()
+	arquivos_salvos = ListaArquivosSalvos()
+	destinos_salvos: set[Path] = set()
 	for item in itens:
 		if getattr(item, "Class", None) != 43:  # olMail
 			continue
@@ -158,18 +188,16 @@ def salvar_anexos_quadro_resumo() -> list[str]:
 			extensao = Path(str(anexo.FileName)).suffix.lower()
 			if extensao == ".xlsx":
 				arquivos_salvos.extend(
-					_salvar_anexo_xlsx(anexo, assunto, pastas_alteradas)
+					_salvar_anexo_xlsx(anexo, assunto, destinos_salvos)
 				)
 			elif extensao == ".zip":
 				with tempfile.TemporaryDirectory() as diretorio_temporario:
 					caminho_zip = Path(diretorio_temporario) / Path(str(anexo.FileName)).name
 					anexo.SaveAsFile(str(caminho_zip))
 					arquivos_salvos.extend(
-						_salvar_xlsx_do_zip(caminho_zip, assunto, pastas_alteradas)
+						_salvar_xlsx_do_zip(caminho_zip, assunto, destinos_salvos)
 					)
 
-	for pasta in pastas_alteradas:
-		organizar_versoes(pasta)
 	return arquivos_salvos
 
 

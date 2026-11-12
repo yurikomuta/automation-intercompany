@@ -31,6 +31,7 @@ New-Item -ItemType Directory -Force -Path $payloadDir, $workDir, $distDir | Out-
 Compress-Archive -Path $runtimeDir -DestinationPath $runtimeZip -CompressionLevel Fastest -Force
 
 $arguments = @(
+	"--clean",
 	(Join-Path $projectDir "app.py"),
 	"--noconsole",
 	"--windowed",
