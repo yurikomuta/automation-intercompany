@@ -5,6 +5,7 @@ from attachment_archive import extrair_e_remover_zip
 from company_folder import (
 	arquivo_ja_processado,
 	organizar_versoes,
+	preparar_pasta_empresa,
 )
 from outlook_sync import sincronizar_todas_as_pastas
 
@@ -18,7 +19,7 @@ ASSUNTO = re.compile(
 	re.IGNORECASE,
 )
 PASTA_DESTINO = Path(r"\\brtssisp003\bbb0133$\2 - Intercompany")
-EXTENSOES_PERMITIDAS = {".xls", ".xlsx", ".xlsb", ".csv", ".xlsm", ".zip"}
+EXTENSOES_PERMITIDAS = {".xls", ".xlsx", ".csv", ".xlsm",".zip"}
 
 
 def salvar_anexos_dos_relatorios() -> int:
@@ -55,8 +56,7 @@ def salvar_anexos_dos_relatorios() -> int:
 				/ "COMPOSIÇÃO DE SALDOS"
 				/ pasta_empresa
 			)
-			pasta.mkdir(parents=True, exist_ok=True)
-			organizar_versoes(pasta)
+			preparar_pasta_empresa(pasta)
 
 			destino = pasta / nome
 			if destino.exists():

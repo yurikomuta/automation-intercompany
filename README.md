@@ -1,12 +1,13 @@
 # Automação Intercompany
 
-Aplicativo desktop para atualizar a caixa de entrada do Outlook e salvar anexos dos relatórios de Eliminação Patrimonial e Eliminação Resultado.
+Aplicativo desktop para atualizar a caixa de entrada do Outlook e salvar anexos de relatórios intercompany.
 
 ## Funcionalidades
 
 - **Atualizar caixa de entrada:** executa uma sincronização do Outlook e aguarda a conclusão, com limite de cinco minutos.
 - **Eliminação Patrimonial:** procura os e-mails correspondentes na Caixa de Entrada e salva os anexos reconhecidos.
 - **Eliminação Resultado:** procura os e-mails correspondentes na Caixa de Entrada e salva os anexos reconhecidos.
+- **Quadro Resumo Patrimonial Consolidado:** organiza os XLSX recebidos diretamente ou dentro de ZIP por competência e empresa.
 - **Log na tela:** apresenta horário, resultado da ação, quantidade de anexos salvos e erros. O botão de lixeira limpa o log da sessão.
 
 Durante uma operação, os outros botões ficam desabilitados para evitar execuções simultâneas. As rotinas de eliminação também sincronizam o Outlook antes de buscar e-mails.
@@ -37,7 +38,7 @@ O app também organiza pastas de empresa já existentes antes da busca de e-mail
 - Windows 10 ou 11 de 64 bits.
 - Python 3.10 ou posterior.
 - Microsoft Outlook desktop instalado, com perfil e Caixa de Entrada configurados. A automação usa Outlook via COM; o novo Outlook não oferece essa interface COM.
-- Acesso à pasta de destino configurada nos scripts (`Z:\brtssisp003\bbb0133$\2 - Intercompany`).
+- Acesso à pasta de destino na rede (`\\brtssisp003\bbb0133$\2 - Intercompany`).
 
 ## Instalação
 
@@ -54,6 +55,20 @@ Instale as dependências do aplicativo:
 ```
 
 O arquivo `requirements-app.txt` fixa a versão do Flet e instala o cliente desktop e o `pywin32`.
+
+## Gerar executável para homologação
+
+Na máquina de build, instale também a dependência de empacotamento:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-build.txt
+```
+
+Execute o script abaixo. Ele atualiza o executável e o ZIP existentes em `dist-homologacao` e mantém os arquivos temporários em `build-homologacao`:
+
+```powershell
+.\gerar-executavel.ps1
+```
 
 ## Executar
 
